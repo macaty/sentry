@@ -375,7 +375,6 @@ def digest(request):
     ).render(request)
 
 
-@login_required
 def report(request):
     from sentry.tasks import reports
 
