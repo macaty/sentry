@@ -23,6 +23,20 @@
 
 {% block content %}
 
+<style type="text/css" inline="false">
+
+  @media only screen and (max-device-width: 480px) {
+
+    table.columns > tbody > tr > td,
+    table.columns > tbody > tr > th {
+        display: block;
+        width: 100%;
+    }
+
+  }
+
+</style>
+
 <div class="container">
   <p class="info-box">
     You're seeing a preview release of our Weekly Reports.<br />
@@ -75,6 +89,7 @@
       </td>
       {% for label, change in report.comparisons %}
       <td class="issues-resolved-column {% if not forloop.last %}issues-resolved-column-middle{% endif %}">
+
           {% if change %}
             <div class="stat">
             {% if change >= 0 %}
@@ -293,7 +308,7 @@
   </table>
 
   <div>
-    <table>
+    <table class="columns">
       <tr>
         {% for first_date, weeks in report.calendar.sheets %}
           <td class="calendar" style="">
@@ -332,7 +347,7 @@
 
   {% if personal.resolved and personal.users %}
     <h4>Your impact</h4>
-    <table class="user-impact">
+    <table class="user-impact columns">
       <tr>
         <td width="50%">
           <table>
