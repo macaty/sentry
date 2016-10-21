@@ -115,6 +115,7 @@ class MailPreview(object):
         return render_to_string(self.text_template, self.context)
 
     def html_body(self):
+        inline_css = lambda i: i
         try:
             return inline_css(render_to_string(self.html_template, self.context))
         except Exception:
