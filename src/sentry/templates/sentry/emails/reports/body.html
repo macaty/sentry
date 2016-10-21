@@ -63,7 +63,6 @@
   }
 
   .weekly-report .issues-resolved .issues-resolved-column {
-    width: 33.3%;
     text-align: right;
   }
 
@@ -136,6 +135,24 @@
 
 </style>
 
+<style type="text/css" inline="false">
+
+  @media only screen and (max-device-width: 480px) {
+
+    .mobile-full-width > th,
+    .mobile-full-width > td {
+      display: block;
+      width: 100%;
+    }
+
+    .mobile-hidden {
+      display: none;
+    }
+
+  }
+
+</style>
+
 {% endblock %}{
 
 {% block bodyclass %}weekly-report{% endblock %}
@@ -158,28 +175,17 @@
 
 {% block content %}
 
-<style type="text/css" inline="false">
-
-  @media only screen and (max-device-width: 480px) {
-
-    table.columns > tbody > tr > td,
-    table.columns > tbody > tr > th {
-        display: block;
-        width: 100%;
-    }
-
-  }
-
-</style>
-
 <div class="container">
+
+  <!--
   <p class="info-box">
     You're seeing a preview release of our Weekly Reports.<br />
     Have feedback? Let us know on our <a href="https://forum.sentry.io/t/weekly-reports-for-early-adopter-organizations/132">support forum</a>.
   </p>
+  -->
 
   <table style="margin-bottom: 10px">
-    <tr>
+    <tr class="mobile-full-width">
       <td>
           <h4>Events Seen {{ duration.noun|title }}</h4>
       </td>
@@ -191,8 +197,8 @@
   </table>
 
   <table class="issues-resolved">
-    <tr>
-      <td class="issues-resolved-column issues-resolved-column-left">
+    <tr class="mobile-full-width">
+      <td width="33%" class="issues-resolved-column issues-resolved-column-left">
         <table class="issue-graph">
           <tr class="graph">
           {% with report.series.maximum as max %}
@@ -222,32 +228,38 @@
           </tr>
         </table>
       </td>
-      {% for label, change in report.comparisons %}
-      <td class="issues-resolved-column {% if not forloop.last %}issues-resolved-column-middle{% endif %}">
+      <td width="66%">
+        <table>
+          <tr>
+            {% for label, change in report.comparisons %}
+            <td width="50%" class="issues-resolved-column {% if not forloop.last %}issues-resolved-column-middle{% endif %}">
 
-          {% if change %}
-            <div class="stat">
-            {% if change >= 0 %}
-                <img src="{% absolute_asset_url 'sentry' 'images/email/arrow-increase.png' %}" width="20px" height="10px">
-            {% else %}
-                <img src="{% absolute_asset_url 'sentry' 'images/email/arrow-decrease.png' %}" width="20px" height="10px">
-            {% endif %}
-            {% with change|multiply:"100"|absolute_value as percentage %}
-                {% if percentage >= 1000 %}{{ percentage|floatformat:"0" }}{% else %}{{ percentage|floatformat:"-1" }}{% endif %}%
-            {% endwith %}
-            </div>
-            <small>{% if change >= 0 %}more{% else %}less{% endif %} than {{ label }}</small>
-          {% else %}
-            <small class="empty">There is not enough data to compare to {{ label }}.</small>
-          {% endif %}
+                {% if change %}
+                  <div class="stat">
+                  {% if change >= 0 %}
+                      <img src="{% absolute_asset_url 'sentry' 'images/email/arrow-increase.png' %}" width="20px" height="10px">
+                  {% else %}
+                      <img src="{% absolute_asset_url 'sentry' 'images/email/arrow-decrease.png' %}" width="20px" height="10px">
+                  {% endif %}
+                  {% with change|multiply:"100"|absolute_value as percentage %}
+                      {% if percentage >= 1000 %}{{ percentage|floatformat:"0" }}{% else %}{{ percentage|floatformat:"-1" }}{% endif %}%
+                  {% endwith %}
+                  </div>
+                  <small>{% if change >= 0 %}more{% else %}less{% endif %} than {{ label }}</small>
+                {% else %}
+                  <small class="empty">There is not enough data to compare to {{ label }}.</small>
+                {% endif %}
+            </td>
+            {% endfor %}
+          </tr>
+        </table>
       </td>
-      {% endfor %}
     </tr>
   </table>
 
   {% with report.distribution.total as total %}
   <table class="issue-breakdown">
-    <tr>
+    <tr class="mobile-full-width">
       <td>
         <h4>Events by Issue Type</h4>
       </td>
@@ -354,8 +366,8 @@
           <th style="width: 1em;"></th>
           <th style="width: 7em;" class="numeric">Events</th>
           <th>Project</th>
-          <th style="width: 7em;" class="numeric">Filtered</th>
-          <th style="width: 7em;" class="numeric">Rate Limited</th>
+          <th style="width: 7em;" class="numeric mobile-hidden">Filtered</th>
+          <th style="width: 7em;" class="numeric mobile-hidden">Rate Limited</th>
         </tr>
       </thead>
       <tbody>
@@ -368,8 +380,8 @@
           <td>
               {% if key.url %}<a href="{{ key.url }}" style="font-weight: bold;">{% endif %}{{ key.label }}{% if key.url %}</a>{% endif %}
           </td>
-          <td class="numeric">{{ key.data.filtered|small_count:1 }}</td>
-          <td class="numeric">{{ key.data.rate_limited|small_count:1 }}</td>
+          <td class="numeric mobile-hidden">{{ key.data.filtered|small_count:1 }}</td>
+          <td class="numeric mobile-hidden">{{ key.data.rate_limited|small_count:1 }}</td>
         </tr>
       {% endfor %}
       </tbody>
@@ -430,7 +442,7 @@
   </style>
 
   <table style="margin-bottom: 25px;">
-    <tr>
+    <tr class="mobile-full-width">
       <th style="width: 300px; text-align: left; font-weight: 700; font-size: 18px;">
         3 Month History
       </th>
@@ -444,7 +456,7 @@
 
   <div>
     <table class="columns">
-      <tr>
+      <tr class="mobile-full-width">
         {% for first_date, weeks in report.calendar.sheets %}
           <td class="calendar" style="">
             <h5>{{ first_date|date:"F Y" }}</h5>
@@ -483,7 +495,7 @@
   {% if personal.resolved and personal.users %}
     <h4>Your impact</h4>
     <table class="user-impact columns">
-      <tr>
+      <tr class="mobile-full-width">
         <td width="50%">
           <table>
             <tr>
