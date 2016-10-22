@@ -203,6 +203,15 @@
       display: none;
     }
 
+    #events-seen-header .legend {
+      display: none;
+    }
+
+    .issue-graph-bar .all,
+    .issue-graph-bar .resolved {
+      background-color: #6C5FC7;
+    }
+
   }
 
 </style>
@@ -236,7 +245,7 @@
   </p>
   -->
 
-  <table style="margin-bottom: 10px">
+  <table id="events-seen-header" style="margin-bottom: 10px">
     <tr class="mobile-full-width">
       <td>
           <h4>Events Seen {{ duration.noun|title }}</h4>
