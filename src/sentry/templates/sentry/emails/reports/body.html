@@ -7,26 +7,26 @@
 
 <style type="text/css">
 
-  .weekly-report .container {
+  .container {
     padding-top: 10px;
     padding-bottom: 10px;
   }
 
-  .weekly-report .header td {
+  .header td {
     text-align: right;
     font-size: 14px;
   }
 
-  .weekly-report td, .weekly-report th {
+  td, th {
     text-align: left;
   }
 
-  .weekly-report .legend {
+  .legend {
     font-size: 14px;
     text-align: right;
   }
 
-  .weekly-report .legend span {
+  .legend span {
     width: 16px;
     height: 16px;
     vertical-align: bottom;
@@ -36,87 +36,87 @@
     color: #fff;
   }
 
-  .weekly-report .issue-graph {
+  .issue-graph {
     table-layout: fixed;
   }
 
-  .weekly-report .issue-graph .graph > td,
-  .weekly-report .issue-graph .labels > td {
+  .issue-graph .graph > td,
+  .issue-graph .labels > td {
     padding-right: 5px;
   }
 
-  .weekly-report .issue-graph .labels td {
+  .issue-graph .labels td {
     padding-top: 3px;
     font-size: 10px;
     text-align: center;
     color: #848296;
   }
 
-  .weekly-report .legend .all,
-  .weekly-report .issue-graph-bar .all {
+  .legend .all,
+  .issue-graph-bar .all {
     background-color: #ebe9f7;
   }
 
-  .weekly-report .legend .resolved,
-  .weekly-report .issue-graph-bar .resolved {
+  .legend .resolved,
+  .issue-graph-bar .resolved {
     background-color: #6C5FC7;
   }
 
-  .weekly-report .issues-resolved .issues-resolved-column {
+  .issues-resolved .issues-resolved-column {
     text-align: right;
   }
 
-  .weekly-report .issues-resolved .empty {
+  .issues-resolved .empty {
     display: block;
     text-align: center;
   }
 
-  .weekly-report .issues-resolved .issues-resolved-column-left {
+  .issues-resolved .issues-resolved-column-left {
     padding-right: 15px;
     vertical-align: bottom;
   }
 
-  .weekly-report .issues-resolved .issues-resolved-column-middle {
+  .issues-resolved .issues-resolved-column-middle {
     padding-left: 20px;
     padding-right: 20px;
     border-left: 1px solid #D6DBE4;
     border-right: 1px solid #D6DBE4;
   }
 
-  .weekly-report .issues-resolved .issues-resolved-column .stat {
+  .issues-resolved .issues-resolved-column .stat {
     font-size: 35px;
     margin-top: 5px;
     margin-bottom: 5px;
   }
 
-  .weekly-report .issues-resolved .issues-resolved-column .stat img {
+  .issues-resolved .issues-resolved-column .stat img {
     vertical-align: middle;
   }
 
-  .weekly-report .issue-graph, .weekly-report .issue-graph-bar {
+  .issue-graph, .issue-graph-bar {
     margin-bottom: 0;
   }
 
-  .weekly-report .issue-graph-bar td {
+  .issue-graph-bar td {
     font-size: 0;
   }
 
-  .weekly-report .user-impact-stat table {
+  .user-impact-stat table {
     width: 90px;
     height: 90px;
     margin: 0 18px 0 0;
   }
 
-  .weekly-report .user-impact-stat td {
+  .user-impact-stat td {
     margin: 0;
     padding: 0;
   }
 
-  .weekly-report .user-impact-stat img {
+  .user-impact-stat img {
     display: block;
   }
 
-  .weekly-report .user-impact-stat td.count {
+  .user-impact-stat td.count {
     text-align: center;
     line-height: 1;
     font-size: 32px;
@@ -127,7 +127,7 @@
     overflow: hidden;
   }
 
-  .weekly-report .user-impact-text {
+  .user-impact-text {
     font-size: 18px;
     font-weight: 500;
     padding-right: 20px;
@@ -149,23 +149,75 @@
       display: none;
     }
 
+    .issues-resolved {
+      margin-bottom: 0;
+    }
+
+    .issues-resolved table {
+      margin-bottom: 0;
+    }
+
+    .issues-resolved .issue-graph {
+      margin-bottom: 10px;
+    }
+
+    .issues-resolved .issues-resolved-column {
+      padding: 0;
+      vertical-align: top;
+    }
+
+    .issues-resolved .issues-resolved-column {
+      border-left: none;
+      border-right: none;
+      text-align: center;
+    }
+
+    .issues-resolved .issues-resolved-column .stat {
+      font-size: 28px;
+    }
+
+    .issues-resolved .issues-resolved-column .stat small {
+      font-size: 28px;
+    }
+
+    .issues-resolved .issues-resolved-column small.empty {
+      background-color: #f9f9f9;
+      padding: 10px;
+      margin: 0 10px;
+    }
+
+    .mobile-full-width td.spectrum {  /* XXX */
+      text-align: center;
+    }
+
+    .mobile-full-width td.spectrum .range span {
+      width: 10px;
+    }
+
+    .issue-breakdown .legend {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .issue-breakdown .legend .quantity {
+      display: none;
+    }
+
   }
 
 </style>
 
 {% endblock %}{
 
-{% block bodyclass %}weekly-report{% endblock %}
-
 {% block header %}
   <table>
     <tr>
-      <td width="125px">
+      <td class="logo" width="125px">
         <h1>
           <a href="{% absolute_uri %}"><img src="{% absolute_asset_url 'sentry' 'images/email/sentry_logo_full.png' %}" width="125px" height="29px" alt="Sentry"></a>
         </h1>
       </td>
-      <td class="align-right">
+      <td class="dateline align-right">
         <strong>{{ duration.adjective|title }} Update for {{ organization.name }}</strong><br />
         {{ interval.start }} &ndash; {{ interval.stop }}
       </td>
@@ -265,7 +317,7 @@
       </td>
       <td class="legend">
         {% for type, count in report.distribution.types %}
-          <span class="box" style="background-color: {{ type.color }};"></span>{{ type.label }}: {% percent count total "0.1f" %}%
+          <span class="box" style="background-color: {{ type.color }};"></span>{{ type.label }}<span class="quantity">: {% percent count total "0.1f" %}%</span>
         {% endfor %}
       </td>
     </tr>
@@ -444,7 +496,7 @@
   <table style="margin-bottom: 25px;">
     <tr class="mobile-full-width">
       <th style="width: 300px; text-align: left; font-weight: 700; font-size: 18px;">
-        3 Month History
+        <h4>3 Month History</h4>
       </th>
       <td class="spectrum">
         Less Events
