@@ -23,7 +23,6 @@ from sentry.tasks.base import instrumented_task
 from sentry.utils import json, redis
 from sentry.utils.dates import floor_to_utc_day, to_datetime, to_timestamp
 from sentry.utils.email import MessageBuilder
-from sentry.utils.math import mean
 from six.moves import reduce
 
 date_format = functools.partial(
@@ -196,31 +195,6 @@ def prepare_project_series((start, stop), project, rollup=60 * 60 * 24):
             total - resolved,  # unresolved
         ),
     )
-
-
-def prepare_project_aggregates((_, stop), project):
-    # TODO: This needs to return ``None`` for periods that don't have any data
-    # (because the project is not old enough) and possibly extrapolate for
-    # periods that only have partial periods.
-    segments = 4
-    period = timedelta(days=7)
-    start = stop - (period * segments)
-
-    def get_aggregate_value(start, stop):
-        return tsdb.get_sums(
-            tsdb.models.project,
-            (project.id,),
-            start,
-            stop,
-            rollup=60 * 60 * 24,
-        )[project.id]
-
-    return [
-        get_aggregate_value(
-            start + (period * i),
-            start + (period * (i + 1) - timedelta(seconds=1)),
-        ) for i in range(segments)
-    ]
 
 
 def prepare_project_issue_summaries(interval, project):
@@ -406,14 +380,6 @@ Report, prepare_project_report, merge_reports = build(
             functools.partial(
                 merge_series,
                 function=merge_sequences,
-            ),
-        ),
-        (
-            'aggregates',
-            prepare_project_aggregates,
-            functools.partial(
-                merge_sequences,
-                function=safe_add,
             ),
         ),
         (
@@ -662,10 +628,6 @@ class Skipped(object):
     NoReports = object()
 
 
-def has_valid_aggregates(interval, (project, report)):
-    return any(bool(value) for value in report.aggregates)
-
-
 @instrumented_task(
     name='sentry.tasks.reports.deliver_organization_user_report',
     queue='reports.deliver')
@@ -696,9 +658,7 @@ def deliver_organization_user_report(timestamp, duration, organization_id, user_
     interval = _to_interval(timestamp, duration)
     projects = list(projects)
 
-    inclusion_predicates = [
-        has_valid_aggregates,
-    ]
+    inclusion_predicates = []  # TODO: this needs to be brought back in some fashion
 
     reports = dict(
         filter(
@@ -854,13 +814,6 @@ def to_context(organization, interval, reports):
             ),
             'total': sum(report.issue_summaries),
         },
-        'comparisons': [
-            ('last week', change(report.aggregates[-1], report.aggregates[-2])),
-            ('four week average', change(
-                report.aggregates[-1],
-                mean(report.aggregates) if all(v is not None for v in report.aggregates) else None,
-            )),
-        ],
         'projects': {
             'series': build_project_breakdown_series(reports),
         },

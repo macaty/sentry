@@ -64,38 +64,6 @@
       background-color: #6C5FC7;
     }
 
-    .issues-resolved .issues-resolved-column {
-      width: 33.3%;
-      text-align: right;
-    }
-
-    .issues-resolved .empty {
-      display: block;
-      text-align: center;
-    }
-
-    .issues-resolved .issues-resolved-column-left {
-      padding-right: 15px;
-      vertical-align: bottom;
-    }
-
-    .issues-resolved .issues-resolved-column-middle {
-      padding-left: 20px;
-      padding-right: 20px;
-      border-left: 1px solid #D6DBE4;
-      border-right: 1px solid #D6DBE4;
-    }
-
-    .issues-resolved .issues-resolved-column .stat {
-      font-size: 35px;
-      margin-top: 5px;
-      margin-bottom: 5px;
-    }
-
-    .issues-resolved .issues-resolved-column .stat img {
-      vertical-align: middle;
-    }
-
     .issue-graph, .issue-graph-bar {
       margin-bottom: 0;
     }
@@ -176,56 +144,31 @@
     </tr>
   </table>
 
-  <table class="issues-resolved">
-    <tr>
-      <td class="issues-resolved-column issues-resolved-column-left">
-        <table class="issue-graph">
-          <tr class="graph">
-          {% with report.series.maximum as max %}
-          {% for timestamp, metrics in report.series.points %}
-            <td valign="bottom" style="width: {% widthratio 1 report.series.points|length 100 %}%">
-              <table class="issue-graph-bar">
-                {% if metrics.resolved or metrics.unresolved %}
-                  <tr>
-                    <td class="all" height="{% widthratio metrics.unresolved max 52 %}px" title="{{ metrics.unresolved }}">&nbsp;</td>
-                  </tr>
-                  <tr>
-                    <td class="resolved" height="{% widthratio metrics.resolved max 52 %}px" title="{{ metrics.resolved }}">&nbsp;</td>
-                  </tr>
-                {% else %}
-                  <tr><td></td></tr>
-                  <tr><td class="all baseline" height="1px">&nbsp;</td>
-                {% endif %}
-              </table>
-            </td>
-          {% endfor %}
-          {% endwith %}
-          </tr>
-          <tr class="labels">
-            {% for timestamp, metrics in report.series.points %}
-              <td title="{{ timestamp }}" style="width: {% widthratio 1 report.series.points|length 100 %}%">{{ timestamp|date:duration.date_format|first }}</td>
-            {% endfor %}
-          </tr>
+  <table class="issue-graph">
+    <tr class="graph">
+    {% with report.series.maximum as max %}
+    {% for timestamp, metrics in report.series.points %}
+      <td valign="bottom" style="width: {% widthratio 1 report.series.points|length 100 %}%">
+        <table class="issue-graph-bar">
+          {% if metrics.resolved or metrics.unresolved %}
+            <tr>
+              <td class="all" height="{% widthratio metrics.unresolved max 52 %}px" title="{{ metrics.unresolved }}">&nbsp;</td>
+            </tr>
+            <tr>
+              <td class="resolved" height="{% widthratio metrics.resolved max 52 %}px" title="{{ metrics.resolved }}">&nbsp;</td>
+            </tr>
+          {% else %}
+            <tr><td></td></tr>
+            <tr><td class="all baseline" height="1px">&nbsp;</td>
+          {% endif %}
         </table>
       </td>
-      {% for label, change in report.comparisons %}
-      <td class="issues-resolved-column {% if not forloop.last %}issues-resolved-column-middle{% endif %}">
-          {% if change %}
-            <div class="stat">
-            {% if change >= 0 %}
-                <img src="{% absolute_asset_url 'sentry' 'images/email/arrow-increase.png' %}" width="20px" height="10px">
-            {% else %}
-                <img src="{% absolute_asset_url 'sentry' 'images/email/arrow-decrease.png' %}" width="20px" height="10px">
-            {% endif %}
-            {% with change|multiply:"100"|absolute_value as percentage %}
-                {% if percentage >= 1000 %}{{ percentage|floatformat:"0" }}{% else %}{{ percentage|floatformat:"-1" }}{% endif %}%
-            {% endwith %}
-            </div>
-            <small>{% if change >= 0 %}more{% else %}less{% endif %} than {{ label }}</small>
-          {% else %}
-            <small class="empty">There is not enough data to compare to {{ label }}.</small>
-          {% endif %}
-      </td>
+    {% endfor %}
+    {% endwith %}
+    </tr>
+    <tr class="labels">
+      {% for timestamp, metrics in report.series.points %}
+        <td title="{{ timestamp }}" style="width: {% widthratio 1 report.series.points|length 100 %}%">{{ timestamp|date:duration.date_format|first }}</td>
       {% endfor %}
     </tr>
   </table>

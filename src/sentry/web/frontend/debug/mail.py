@@ -490,13 +490,8 @@ def report(request):
             (random.randint(0, daily_maximum), random.randint(0, daily_maximum))
         ) for i in xrange(0, 7)]
 
-        aggregates = [
-            random.randint(0, daily_maximum * 7) if random.random() < 0.9 else None for _ in xrange(0, 4)
-        ]
-
         return reports.Report(
             series,
-            aggregates,
             build_issue_summaries(),
             build_usage_summary(),
             build_calendar_data(project),

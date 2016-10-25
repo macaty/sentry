@@ -10,9 +10,9 @@ from django.core import mail
 from sentry.app import tsdb
 from sentry.models import Project, UserOption
 from sentry.tasks.reports import (
-    DISABLED_ORGANIZATIONS_USER_OPTION_KEY, Report, Skipped, change,
+    DISABLED_ORGANIZATIONS_USER_OPTION_KEY, Skipped, change,
     clean_series, colorize, deliver_organization_user_report,
-    get_calendar_range, get_percentile, has_valid_aggregates, index_to_month,
+    get_calendar_range, get_percentile, index_to_month,
     merge_mappings, merge_sequences, merge_series, month_to_index,
     prepare_reports, safe_add, user_subscribed_to_organization_reports
 )
@@ -163,28 +163,6 @@ def test_clean_series_rejects_offset_timestamp():
             rollup,
             series,
         )
-
-
-def test_has_valid_aggregates(interval):
-    project = None  # parameter is unused
-
-    def make_report(aggregates):
-        return Report(None, aggregates, None, None, None)
-
-    assert has_valid_aggregates(
-        interval,
-        (project, make_report([None] * 4)),
-    ) is False
-
-    assert has_valid_aggregates(
-        interval,
-        (project, make_report([0] * 4)),
-    ) is False
-
-    assert has_valid_aggregates(
-        interval,
-        (project, make_report([1, 0, 0, 0])),
-    ) is True
 
 
 def test_percentiles():
