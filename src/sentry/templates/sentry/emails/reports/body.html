@@ -54,13 +54,7 @@
       color: #848296;
     }
 
-    .legend .all,
-    .issue-graph-bar .all {
-      background-color: #ebe9f7;
-    }
-
-    .legend .resolved,
-    .issue-graph-bar .resolved {
+    .issue-graph-bar td {
       background-color: #6C5FC7;
     }
 
@@ -132,33 +126,19 @@
     Have feedback? Let us know on our <a href="https://forum.sentry.io/t/weekly-reports-for-early-adopter-organizations/132">support forum</a>.
   </p>
 
-  <table style="margin-bottom: 10px">
-    <tr>
-      <td>
-          <h4>Events Seen {{ duration.noun|title }}</h4>
-      </td>
-      <td class="legend">
-          <span class="all"></span> All: {{ report.series.all|small_count }}
-          <span class="resolved"></span> Resolved: {{ report.series.resolved|small_count }}
-      </td>
-    </tr>
-  </table>
+  <h4>Events Seen {{ duration.noun|title }}</h4>
 
   <table class="issue-graph">
     <tr class="graph">
     {% with report.series.maximum as max %}
-    {% for timestamp, metrics in report.series.points %}
+    {% for timestamp, value in report.series.points %}
       <td valign="bottom" style="width: {% widthratio 1 report.series.points|length 100 %}%">
         <table class="issue-graph-bar">
-          {% if metrics.resolved or metrics.unresolved %}
+          {% if value %}
             <tr>
-              <td class="all" height="{% widthratio metrics.unresolved max 52 %}px" title="{{ metrics.unresolved }}">&nbsp;</td>
-            </tr>
-            <tr>
-              <td class="resolved" height="{% widthratio metrics.resolved max 52 %}px" title="{{ metrics.resolved }}">&nbsp;</td>
+              <td height="{% widthratio value max 70 %}px" title="{{ value }}">&nbsp;</td>
             </tr>
           {% else %}
-            <tr><td></td></tr>
             <tr><td class="all baseline" height="1px">&nbsp;</td>
           {% endif %}
         </table>

@@ -158,42 +158,24 @@ def merge_series(target, other, function=operator.add):
     return results
 
 
-def prepare_project_series((start, stop), project, rollup=60 * 60 * 24):
+def prepare_project_series((_, stop), project, rollup=60 * 60 * 24):
+    start = stop - timedelta(days=28)
+
     resolution, series = tsdb.get_optimal_rollup_series(start, stop, rollup)
     assert resolution == rollup, 'resolution does not match requested value'
-    clean = functools.partial(clean_series, start, stop, rollup)
-    return merge_series(
-        reduce(
-            merge_series,
-            map(
-                clean,
-                tsdb.get_range(
-                    tsdb.models.group,
-                    project.group_set.filter(
-                        status=GroupStatus.RESOLVED,
-                        resolved_at__gte=start,
-                        resolved_at__lt=stop,
-                    ).values_list('id', flat=True),
-                    start,
-                    stop,
-                    rollup=rollup,
-                ).values(),
-            ),
-            clean([(timestamp, 0) for timestamp in series]),
-        ),
-        clean(
-            tsdb.get_range(
-                tsdb.models.project,
-                [project.id],
-                start,
-                stop,
-                rollup=rollup,
-            )[project.id],
-        ),
-        lambda resolved, total: (
-            resolved,
-            total - resolved,  # unresolved
-        ),
+
+    return clean_series(
+        start,
+        stop,
+        rollup,
+        tsdb.get_range(
+            tsdb.models.project,
+            [project.id],
+            start,
+            stop,
+            rollup=rollup,
+        )[project.id],
+
     )
 
 
@@ -377,10 +359,7 @@ Report, prepare_project_report, merge_reports = build(
         (
             'series',
             prepare_project_series,
-            functools.partial(
-                merge_series,
-                function=merge_sequences,
-            ),
+            functools.partial(merge_series),
         ),
         (
             'issue_summaries',
@@ -694,7 +673,6 @@ def deliver_organization_user_report(timestamp, duration, organization_id, user_
         message.send()
 
 
-Point = namedtuple('Point', 'resolved unresolved')
 DistributionType = namedtuple('DistributionType', 'label color')
 
 
@@ -717,7 +695,7 @@ def build_project_breakdown_series(reports):
     def get_legend_data(report):
         filtered, rate_limited = report.usage_summary
         return {
-            'events': sum(sum(value) for timestamp, value in report.series),
+            'events': sum(value for timestamp, value in report.series),
             'filtered': filtered,
             'rate_limited': rate_limited,
         }
@@ -728,7 +706,7 @@ def build_project_breakdown_series(reports):
         operator.itemgetter(0),
         sorted(
             reports.items(),
-            key=lambda (instance, report): sum(sum(values) for timestamp, values in report[0]),
+            key=lambda (instance, report): sum(value for timestamp, value in report[0]),
             reverse=True,
         ),
     )[:len(colors)]
@@ -767,8 +745,7 @@ def build_project_breakdown_series(reports):
             overflow_report,
         ))
 
-    def summarize(key, points):
-        total = sum(points)
+    def summarize(key, total):
         return [(key, total)] if total else []
 
     # Collect all of the independent series into a single series to make it
@@ -793,13 +770,12 @@ def build_project_breakdown_series(reports):
 
 def to_context(organization, interval, reports):
     report = reduce(merge_reports, reports.values())
-    series = [(to_datetime(timestamp), Point(*values)) for timestamp, values in report.series]
+    series = [(to_datetime(timestamp), value) for timestamp, value in report.series]
     return {
         'series': {
             'points': series,
-            'maximum': max(sum(point) for timestamp, point in series),
-            'all': sum([sum(point) for timestamp, point in series]),
-            'resolved': sum([point.resolved for timestamp, point in series]),
+            'maximum': max(point for timestamp, point in series),
+            'all': sum([point for timestamp, point in series]),
         },
         'distribution': {
             'types': list(

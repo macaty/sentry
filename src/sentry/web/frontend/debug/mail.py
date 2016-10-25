@@ -487,7 +487,7 @@ def report(request):
         rollup = 60 * 60 * 24
         series = [(
             timestamp + (i * rollup),
-            (random.randint(0, daily_maximum), random.randint(0, daily_maximum))
+            random.randint(0, daily_maximum)
         ) for i in xrange(0, 7)]
 
         return reports.Report(
